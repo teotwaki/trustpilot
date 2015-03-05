@@ -18,7 +18,11 @@ struct _client_t {
 	void * socket;
 };
 
+// Constructor/destructor
 client_t * client_init(char const * endpoint);
+int client_destroy(client_t * this);
+
+// Communication with server
 int client_send(client_t * this, char const * payload);
 char * client_recv(client_t * this);
 json_object * client_recv_json(client_t * this);

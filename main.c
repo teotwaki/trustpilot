@@ -8,5 +8,7 @@ int main() {
 		EXIT_FAILURE;
 	}
 
+	client_destroy(client);
+
 	EXIT_SUCCESS;
 }

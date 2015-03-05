@@ -34,6 +34,26 @@ client_t * client_init(char const * endpoint) {
 	return client;
 }
 
+int client_destroy(client_t * this) {
+	int rc = zmq_close(this->socket);
+
+	if (rc != 0) {
+		ERROR("Couldn't close ZMQ socket.");
+		return -1;
+	}
+
+	rc = zmq_term(this->context);
+
+	if (rc != 0) {
+		ERROR("Couldn't terminate ZMQ context.");
+		return -2;
+	}
+
+	free(this);
+
+	return 0;
+}
+
 int client_send(client_t * this, char const * payload) {
 	int length = strlen(payload);
 
