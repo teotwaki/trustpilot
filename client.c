@@ -35,6 +35,8 @@ client_t * client_init(char const * endpoint) {
 }
 
 int client_destroy(client_t * this) {
+	DEBUG("Destroying client.");
+
 	int rc = zmq_close(this->socket);
 
 	if (rc != 0) {
