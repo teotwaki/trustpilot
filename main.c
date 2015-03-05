@@ -5,10 +5,10 @@ int main() {
 
 	if (client == NULL) {
 		ERROR("Client initialisation failed.");
-		EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 
 	client_destroy(client);
 
-	EXIT_SUCCESS;
+	exit(EXIT_SUCCESS);
 }
