@@ -1,9 +1,10 @@
 #ifndef CLIENT_H__
 #define CLIENT_H__
 
-#include <assert.h>
 #include <stdlib.h>
 #include <zmq.h>
+
+#include "log.h"
 
 #define ZMQ_THREADS 1
 #define ZMQ_NOFLAGS 0
