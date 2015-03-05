@@ -1,13 +1,22 @@
 #ifndef SOLVER_H__
 #define SOLVER_H__
 
+#include "log.h"
+#include "client.h"
+
 typedef struct _solver_t solver_t;
 
 struct _solver_t {
-	char const * seed;
-	char const * const * words;
+	char * seed;
+	char * * words;
 	int words_count;
-	char const * current_word;
+	char * current_word;
+	client_t * client;
+
 };
+
+// Constructor/destructor
+solver_t * solver_init(char const * endpoint);
+int solver_destroy(solver_t * this);
 
 #endif
