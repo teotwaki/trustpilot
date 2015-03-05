@@ -11,6 +11,8 @@
 #define ZMQ_THREADS 1
 #define ZMQ_NOFLAGS 0
 
+#define CLIENT_GET_WORDS "{\"type\":\"get_words\"}"
+
 typedef struct _client_t client_t;
 
 struct _client_t {
