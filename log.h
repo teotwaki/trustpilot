@@ -8,28 +8,31 @@
 void _log(FILE * fp, char const * tag, char const * filename, int line,
 		char const * format, ...);
 
+#define _LOG(fp, tag, format, ...) \
+	_log(fp, tag, __FILE__, __LINE__, format, __VA_ARGS__)
+
 #define DEBUG(msg) \
-	_log(stdout, "DEBUG", __FILE__, __LINE__, "%s", msg)
+	_LOG(stdout, "DEBUG", "%s", msg)
 
 #define VDEBUG(format, ...) \
-	_log(stdout, "DEBUG", __FILE__, __LINE__, format, __VA_ARGS__)
+	_LOG(stdout, "DEBUG", format, __VA_ARGS__)
 
 #define INFO(msg) \
-	_log(stdout, "INFO", __FILE__, __LINE__, "%s", msg)
+	_LOG(stdout, "INFO", "%s", msg)
 
 #define VINFO(format, ...) \
-	_log(stdout, "INFO", __FILE__, __LINE__, format, __VA_ARGS__)
+	_LOG(stdout, "INFO", format, __VA_ARGS__)
 
 #define WARN(msg) \
-	_log(stdout, "WARN", __FILE__, __LINE__, "%s", msg)
+	_LOG(stdout, "WARN", "%s", msg)
 
 #define VWARN(format, ...) \
-	_log(stdout, "WARN", __FILE__, __LINE__, format, __VA_ARGS__)
+	_LOG(stdout, "WARN", format, __VA_ARGS__)
 
 #define ERROR(msg) \
-	_log(stderr, "ERROR", __FILE__, __LINE__, "%s", msg)
+	_LOG(stderr, "ERROR", "%s", msg)
 
 #define VERROR(format, ...) \
-	_log(stderr, "ERROR", __FILE__, __LINE__, format, __VA_ARGS__)
+	_LOG(stderr, "ERROR", format, __VA_ARGS__)
 
 #endif
