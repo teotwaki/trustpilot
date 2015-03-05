@@ -5,8 +5,8 @@ int main() {
 
 	if (client == NULL) {
 		ERROR("Client initialisation failed.");
-		exit(-1);
+		EXIT_FAILURE;
 	}
 
-	return 0;
+	EXIT_SUCCESS;
 }
