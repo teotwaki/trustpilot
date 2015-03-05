@@ -3,6 +3,7 @@
 client_t * client_init(char const * endpoint) {
 	DEBUG("Initialising new client.");
 
+	int rc = 0;
 	client_t * client = malloc(sizeof(client_t));
 
 	if (client == NULL) {
@@ -24,7 +25,7 @@ client_t * client_init(char const * endpoint) {
 		return NULL;
 	}
 
-	int rc = zmq_connect(client->socket, endpoint);
+	rc = zmq_connect(client->socket, endpoint);
 
 	if (rc != 0) {
 		ERROR("Couldn't connect to server.");
@@ -37,7 +38,9 @@ client_t * client_init(char const * endpoint) {
 int client_destroy(client_t * this) {
 	DEBUG("Destroying client.");
 
-	int rc = zmq_close(this->socket);
+	int rc = 0;
+
+	rc = zmq_close(this->socket);
 
 	if (rc != 0) {
 		ERROR("Couldn't close ZMQ socket.");

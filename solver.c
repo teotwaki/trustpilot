@@ -3,6 +3,7 @@
 solver_t * solver_init(char const * endpoint) {
 	DEBUG("Initialising new solver.");
 
+	int rc = 0;
 	solver_t * this = malloc(sizeof(solver_t));
 
 	if (this == NULL) {
@@ -11,17 +12,26 @@ solver_t * solver_init(char const * endpoint) {
 		return NULL;
 	}
 
-	this->client = client_init(endpoint);
-
-	if (this->client == NULL) {
-		ERROR("Couldn't initialise client_t instance.");
-		return NULL;
-	}
-
 	this->seed = NULL;
 	this->words = NULL;
 	this->words_count = 0;
 	this->current_word = NULL;
+
+	this->client = client_init(endpoint);
+
+	if (this->client == NULL) {
+		ERROR("Couldn't initialise client_t instance.");
+		solver_destroy(this);
+		return NULL;
+	}
+
+	rc = solver_get_words(this);
+
+	if (rc != 0) {
+		ERROR("Couldn't retrieve words.");
+		solver_destroy(this)
+		return NULL;
+	}
 
 	return this;
 }
