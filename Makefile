@@ -6,7 +6,7 @@ CFLAGS = -m64 -std=c99 -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual \
 GRIND = valgrind
 GRIND_OPTS = --leak-check=full
 
-.PHONY: default all clean grind
+.PHONY: default all clean grind run
 
 default: $(TARGET)
 all: default
@@ -28,3 +28,6 @@ clean:
 
 grind: default
 	$(GRIND) $(GRIND_OPTS) ./$(TARGET)
+
+run: default
+	./$(TARGET)
