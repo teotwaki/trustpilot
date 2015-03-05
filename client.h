@@ -1,7 +1,9 @@
 #ifndef CLIENT_H__
 #define CLIENT_H__
 
+#include <json-c/json.h>
 #include <stdlib.h>
+#include <string.h>
 #include <zmq.h>
 
 #include "log.h"
@@ -17,5 +19,8 @@ struct _client_t {
 };
 
 client_t * client_init(char const * endpoint);
+int client_send(client_t * this, char const * payload);
+char * client_recv(client_t * this);
+json_object * client_recv_json(client_t * this);
 
 #endif
