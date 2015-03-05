@@ -1,0 +1,5 @@
+# Ignore binary
+solver
+
+# Ignore compilation artifacts
+*.o
