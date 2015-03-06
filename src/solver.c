@@ -95,9 +95,12 @@ int solver_initialise_words(solver_t * this) {
 			this->seed = strdup(json_object_get_string(val));
 
 		else {
-			if (this->words != NULL)
+			if (this->words != NULL) {
+				WARN("solver_t's words list was not empty before calling "
+						"initialise_words. Releasing memory.");
 				for (int i = 0; i < this->words_count; i++)
 					free(this->words[i]);
+			}
 
 			this->words_count = json_object_array_length(val);
 
