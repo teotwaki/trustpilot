@@ -13,6 +13,7 @@
 #define ZMQ_ERROR zmq_strerror(errno)
 
 #define CLIENT_INITIALISE "{\"type\":\"initialise\"}"
+#define CLIENT_NEXT_WORD "{\"type\":\"next_word\"}"
 
 typedef struct _client_t client_t;
 
