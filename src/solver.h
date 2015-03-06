@@ -21,6 +21,6 @@ solver_t * solver_init(char const * endpoint);
 int solver_destroy(solver_t * this);
 
 // Words processing
-int solver_get_words(solver_t * this);
+int solver_initialise_words(solver_t * this);
 
 #endif

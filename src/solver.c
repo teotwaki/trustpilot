@@ -25,7 +25,7 @@ solver_t * solver_init(char const * endpoint) {
 		return NULL;
 	}
 
-	rc = solver_get_words(this);
+	rc = solver_initialise_words(this);
 
 	if (rc != 0) {
 		ERROR("Couldn't retrieve words.");
@@ -71,12 +71,12 @@ int solver_destroy(solver_t * this) {
 	return 0;
 }
 
-int solver_get_words(solver_t * this) {
+int solver_initialise_words(solver_t * this) {
 	DEBUG("Retrieving words from server.");
 
 	int rc = 0;
 
-	rc = client_send(this->client, CLIENT_GET_WORDS);
+	rc = client_send(this->client, CLIENT_INITIALISE);
 
 	if (rc != 0) {
 		ERROR("Couldn't send message to server.");

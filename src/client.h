@@ -12,7 +12,7 @@
 #define ZMQ_NOFLAGS 0
 #define ZMQ_ERROR zmq_strerror(errno)
 
-#define CLIENT_GET_WORDS "{\"type\":\"get_words\"}"
+#define CLIENT_INITIALISE "{\"type\":\"initialise\"}"
 
 typedef struct _client_t client_t;
 
