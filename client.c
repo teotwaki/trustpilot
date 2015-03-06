@@ -4,35 +4,39 @@ client_t * client_init(char const * endpoint) {
 	DEBUG("Initialising new client.");
 
 	int rc = 0;
-	client_t * client = malloc(sizeof(client_t));
+	client_t * this = malloc(sizeof(client_t));
 
-	if (client == NULL) {
+	if (this == NULL) {
 		VERROR("Couldn't allocate %d bytes.", sizeof(client_t));
 		return NULL;
 	}
 
-	client->context = zmq_init(ZMQ_THREADS);
+	this->context = NULL;
+	this->socket = NULL;
 
-	if (client->context == NULL) {
+	this->context = zmq_init(ZMQ_THREADS);
+
+	if (this->context == NULL) {
 		ERROR("Couldn't initialise ZMQ context.");
 		return NULL;
 	}
 
-	client->socket = zmq_socket(client->context, ZMQ_REQ);
+	this->socket = zmq_socket(this->context, ZMQ_REQ);
 
-	if (client->socket == NULL) {
+	if (this->socket == NULL) {
 		ERROR("Couldn't create a socket.");
+		client_destroy(this);
 		return NULL;
 	}
 
-	rc = zmq_connect(client->socket, endpoint);
+	rc = zmq_connect(this->socket, endpoint);
 
 	if (rc != 0) {
 		ERROR("Couldn't connect to server.");
 		return NULL;
 	}
 
-	return client;
+	return this;
 }
 
 int client_destroy(client_t * this) {
@@ -40,18 +44,26 @@ int client_destroy(client_t * this) {
 
 	int rc = 0;
 
-	rc = zmq_close(this->socket);
+	if (this->socket != NULL) {
+		rc = zmq_close(this->socket);
 
-	if (rc != 0) {
-		ERROR("Couldn't close ZMQ socket.");
-		return -1;
+		if (rc != 0) {
+			ERROR("Couldn't close ZMQ socket.");
+			return -1;
+		}
+
+		this->socket = NULL;
 	}
 
-	rc = zmq_term(this->context);
+	if (this->context != NULL) {
+		rc = zmq_term(this->context);
 
-	if (rc != 0) {
-		ERROR("Couldn't terminate ZMQ context.");
-		return -2;
+		if (rc != 0) {
+			ERROR("Couldn't terminate ZMQ context.");
+			return -2;
+		}
+
+		this->context = NULL;
 	}
 
 	free(this);
