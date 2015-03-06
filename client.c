@@ -30,6 +30,15 @@ client_t * client_init(char const * endpoint) {
 		return NULL;
 	}
 
+	int linger = 0;
+	rc = zmq_setsockopt(this->sock, ZMQ_LINGER, &linger, sizeof(linger));
+
+	if (rc != 0) {
+		VERROR("Couldn't set ZMQ_LINGER option to 0: %s", ZMQ_ERROR);
+		client_destroy(this);
+		return NULL;
+	}
+
 	rc = zmq_connect(this->sock, endpoint);
 
 	if (rc != 0) {
@@ -66,7 +75,8 @@ int client_destroy(client_t * this) {
 	}
 
 	if (this->ctx != NULL) {
-		rc = zmq_term(this->ctx);
+
+		rc = zmq_ctx_term(this->ctx);
 
 		if (rc != 0) {
 			VERROR("Couldn't terminate ZMQ context: %s", ZMQ_ERROR);
@@ -102,7 +112,7 @@ int client_send(client_t * this, char const * payload) {
 
 	memcpy(zmq_msg_data(&msg), payload, length);
 
-	rc = zmq_msg_send(this->sock, &msg, ZMQ_NOFLAGS);
+	rc = zmq_msg_send(&msg, this->sock, ZMQ_NOFLAGS);
 
 	if (rc != 0) {
 		VERROR("Couldn't send message to server: %s", ZMQ_ERROR);
