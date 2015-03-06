@@ -12,25 +12,25 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 	_log(fp, tag, __FILE__, __LINE__, format, __VA_ARGS__)
 
 #define DEBUG(msg) \
-	_LOG(stdout, "DEBUG", "%s", msg)
+	VDEBUG("%s", msg)
 
 #define VDEBUG(format, ...) \
 	_LOG(stdout, "DEBUG", format, __VA_ARGS__)
 
 #define INFO(msg) \
-	_LOG(stdout, "INFO", "%s", msg)
+	VINFO("%s", msg)
 
 #define VINFO(format, ...) \
 	_LOG(stdout, "INFO", format, __VA_ARGS__)
 
 #define WARN(msg) \
-	_LOG(stdout, "WARN", "%s", msg)
+	VWARN("%s", msg)
 
 #define VWARN(format, ...) \
 	_LOG(stdout, "WARN", format, __VA_ARGS__)
 
 #define ERROR(msg) \
-	_LOG(stderr, "ERROR", "%s", msg)
+	VERROR("%s", msg)
 
 #define VERROR(format, ...) \
 	_LOG(stderr, "ERROR", format, __VA_ARGS__)
