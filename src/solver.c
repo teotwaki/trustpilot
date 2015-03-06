@@ -16,6 +16,7 @@ solver_t * solver_init(char const * endpoint) {
 	this->words = NULL;
 	this->words_count = 0;
 	this->current_word = NULL;
+	this->anagrams = NULL;
 
 	this->client = client_init(endpoint);
 
@@ -29,6 +30,22 @@ solver_t * solver_init(char const * endpoint) {
 
 	if (rc != 0) {
 		ERROR("Couldn't retrieve words.");
+		solver_destroy(this);
+		return NULL;
+	}
+
+	rc = solver_next_word(this);
+
+	if (rc != 0) {
+		ERROR("Couldn't initialise solver_t::current_word.");
+		solver_destroy(this);
+		return NULL;
+	}
+
+	this->anagrams = list_init();
+
+	if (this->anagrams == NULL) {
+		ERROR("Couldn't initialise solver_t::anagrams.");
 		solver_destroy(this);
 		return NULL;
 	}
@@ -66,6 +83,11 @@ int solver_destroy(solver_t * this) {
 		this->client = NULL;
 	}
 
+	if (this->anagrams != NULL) {
+		list_destroy(this->anagrams);
+		this->anagrams = NULL;
+	}
+
 	free(this);
 
 	return 0;
@@ -91,8 +113,14 @@ int solver_initialise_words(solver_t * this) {
 	}
 
 	json_object_object_foreach(object, key, val) {
-		if (strcmp(key, "seed") == 0)
+		if (strcmp(key, "seed") == 0) {
+			if (this->seed != NULL) {
+				WARN("solver_t's seed was not empty before calling "
+						"initialise_words. Releasing memory.");
+				free(this->seed);
+			}
 			this->seed = strdup(json_object_get_string(val));
+		}
 
 		else {
 			if (this->words != NULL) {
@@ -100,6 +128,9 @@ int solver_initialise_words(solver_t * this) {
 						"initialise_words. Releasing memory.");
 				for (int i = 0; i < this->words_count; i++)
 					free(this->words[i]);
+				free(this->words);
+				this->words = NULL;
+				this->words_count = 0;
 			}
 
 			this->words_count = json_object_array_length(val);
@@ -120,6 +151,49 @@ int solver_initialise_words(solver_t * this) {
 	}
 
 	VDEBUG("Received %d words.", this->words_count);
+
+	return 0;
+}
+
+int solver_next_word(solver_t * this) {
+	DEBUG("Retrieving new word from server.");
+
+	int rc = 0;
+
+	rc = client_send(this->client, CLIENT_NEXT_WORD);
+
+	if (rc != 0) {
+		ERROR("Couldn't send message to server.");
+		return -1;
+	}
+
+	json_object * object = client_recv_json(this->client);
+
+	if (object == NULL) {
+		ERROR("Couldn't receive JSON message.");
+		return -2;
+	}
+
+	json_object_object_foreach(object, key, val) {
+		if (strcmp(key, "word") == 0) {
+			if (this->current_word != NULL) {
+				free(this->current_word);
+				this->current_word = NULL;
+			}
+
+			if (!json_object_is_type(val, json_type_null))
+				this->current_word = strdup(json_object_get_string(val));
+		}
+	}
+
+	rc = json_object_put(object);
+
+	if (rc != JSON_OBJECT_FREED) {
+		ERROR("JSON object was not freed.");
+		return -3;
+	}
+
+	VDEBUG("Received new word to process: %s", this->current_word);
 
 	return 0;
 }
@@ -172,4 +246,29 @@ int solver_submit_anagrams(solver_t * this, char const * * anagrams,
 	}
 
 	return 0;
+}
+
+int solver_has_current_word(solver_t * this) {
+	return this->current_word != NULL;
+}
+
+int solver_find_anagrams(solver_t * this) {
+	list_foreach(this->anagrams, anagram) {
+		VDEBUG("Anagram: %s", anagram);
+	}
+
+	return 0;
+}
+
+int solver_loop(solver_t * this) {
+	int rc = 0;
+	int anagrams = 0;
+	int total_anagrams = 0;
+
+	while (solver_has_current_word(this)) {
+		anagrams = solver_find_anagrams(this);
+		total_anagrams += anagrams;
+	}
+
+	return rc;
 }

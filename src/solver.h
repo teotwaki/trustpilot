@@ -4,6 +4,7 @@
 #include <json-c/json.h>
 #include <string.h>
 
+#include "list.h"
 #include "log.h"
 #include "client.h"
 
@@ -17,6 +18,7 @@ struct _solver_t {
 	int words_count;
 	char * current_word;
 	client_t * client;
+	list_t * anagrams;
 };
 
 // Constructor/destructor
@@ -25,7 +27,15 @@ int solver_destroy(solver_t * this);
 
 // Server communications
 int solver_initialise_words(solver_t * this);
+int solver_next_word(solver_t * this);
 int solver_submit_anagrams(solver_t * this, char const * * anagrams,
 		int anagrams_count);
+
+// Object inspection
+int solver_has_current_word(solver_t * this);
+
+// Actual meat
+int solver_find_anagrams(solver_t * this);
+int solver_loop(solver_t * this);
 
 #endif
