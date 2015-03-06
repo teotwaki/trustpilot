@@ -13,6 +13,7 @@ client_t * client_init(char const * endpoint) {
 
 	this->ctx = NULL;
 	this->sock = NULL;
+	this->tokener = NULL;
 
 	this->ctx = zmq_init(ZMQ_THREADS);
 
@@ -33,6 +34,15 @@ client_t * client_init(char const * endpoint) {
 
 	if (rc != 0) {
 		VERROR("Couldn't connect to server: %s", ZMQ_ERROR);;
+		client_destroy(this);
+		return NULL;
+	}
+
+	this->tokener = json_tokener_new();
+
+	if (this->tokener == NULL) {
+		ERROR("Couldn't instantiate JSON tokener.");
+		client_destroy(this);
 		return NULL;
 	}
 
@@ -64,6 +74,11 @@ int client_destroy(client_t * this) {
 		}
 
 		this->ctx = NULL;
+	}
+
+	if (this->tokener != NULL) {
+		json_tokener_free(this->tokener);
+		this->tokener = NULL;
 	}
 
 	free(this);
@@ -133,9 +148,18 @@ json_object * client_recv_json(client_t * this) {
 	DEBUG("Listening for JSON message.");
 
 	char * payload = client_recv(this);
+	int length = strlen(payload);
 
-	json_object * object = json_tokener_parse(payload);
+	json_object * object = json_tokener_parse_ex(
+			this->tokener, payload, length);
 
+	if (object == NULL) {
+		enum json_tokener_error error = json_tokener_get_error(this->tokener);
+		VERROR("Couldn't parse JSON message: %s",
+				json_tokener_error_desc(error));
+	}
+
+	json_tokener_reset(this->tokener);
 	free(payload);
 
 	return object;
