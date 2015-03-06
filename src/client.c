@@ -114,7 +114,7 @@ int client_send(client_t * this, char const * payload) {
 
 	rc = zmq_msg_send(&msg, this->sock, ZMQ_NOFLAGS);
 
-	if (rc != 0) {
+	if (rc == -1) {
 		VERROR("Couldn't send message to server: %s", ZMQ_ERROR);
 		return -2;
 	}
@@ -134,9 +134,9 @@ char * client_recv(client_t * this) {
 		return NULL;
 	}
 
-	rc = zmq_msg_recv(this->sock, &msg, ZMQ_NOFLAGS);
+	rc = zmq_msg_recv(&msg, this->sock, ZMQ_NOFLAGS);
 
-	if (rc != 0) {
+	if (rc == -1) {
 		VERROR("Couldn't receive message: %s", ZMQ_ERROR);
 		return NULL;
 	}
