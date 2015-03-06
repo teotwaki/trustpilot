@@ -157,8 +157,8 @@ char * client_recv(client_t * this) {
 	VDEBUG("Received message of size %d.", length);
 
 	char * payload = malloc(length + 2);
+	memset(payload, 0, length + 2);
 	memcpy(payload, zmq_msg_data(&msg), length);
-	payload[length + 1] = '\0';
 
 	zmq_msg_close(&msg);
 
