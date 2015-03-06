@@ -255,7 +255,7 @@ int solver_has_current_word(solver_t * this) {
 int solver_find_anagrams(solver_t * this) {
 	if (this->anagrams != NULL) {
 		for (int i = 0; i < this->anagrams->anagrams_count; i++)
-			VDEBUG("Anagram: %s", this->anagrams->anagrams[i]);
+			VDEBUG("Anagram: %s", list_get(this->anagrams, i));
 	}
 
 	return 0;

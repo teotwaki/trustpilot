@@ -37,6 +37,13 @@ int list_destroy(list_t * this) {
 	return 0;
 }
 
+char * list_get(list_t * this, int idx) {
+	if (this->capacity > 0 && idx < this->anagrams_count)
+		return this->anagrams[idx];
+
+	return NULL;
+}
+
 int list_append(list_t * this, char * item) {
 	int rc = 0;
 
