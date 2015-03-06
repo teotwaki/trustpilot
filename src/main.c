@@ -13,17 +13,31 @@ char * get_host(void) {
 }
 
 int main() {
-	char * solver_host = get_host();
-	solver_t * solver = solver_init(solver_host);
+	int rc = 0;
+	solver_t * solver = NULL;
+
+	{
+		char * solver_host = get_host();
+		solver = solver_init(solver_host);
+
+		free(solver_host);
+		solver_host = NULL;
+	}
 
 	if (solver == NULL) {
 		ERROR("Solver initialisation failed.");
-		free(solver_host);
+		exit(EXIT_FAILURE);
+	}
+
+	rc = solver_loop(solver);
+
+	if (rc != 0) {
+		ERROR("Solver failed to finish its loop.");
+		solver_destroy(solver);
 		exit(EXIT_FAILURE);
 	}
 
 	solver_destroy(solver);
-	free(solver_host);
 
 	exit(EXIT_SUCCESS);
 }
