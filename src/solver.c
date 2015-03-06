@@ -123,3 +123,46 @@ int solver_initialise_words(solver_t * this) {
 
 	return 0;
 }
+
+int solver_submit_anagrams(solver_t * this, char const * * anagrams,
+		int anagrams_count)
+{
+	json_object * object = json_object_new_object();
+	int rc = 0;
+
+	if (object == NULL) {
+		ERROR("Couldn't instantiate JSON object.");
+		return -1;
+	}
+
+	{
+		json_object_object_add(object, "type",
+				json_object_new_string("found_anagrams"));
+
+		json_object * array = json_object_new_array();
+
+		for (int i = 0; i < anagrams_count; i++) {
+			json_object_array_add(array,
+					json_object_new_string(anagrams[i]));
+		}
+
+		json_object_object_add(object, "result", array);
+	}
+
+	rc = client_send(this->client,
+			json_object_get_string(object));
+
+	if (rc != 0) {
+		ERROR("Couldn't send JSON message");
+		return -2;
+	}
+
+	rc = json_object_put(object);
+
+	if (rc != JSON_OBJECT_FREED) {
+		ERROR("JSON object was not freed.");
+		return -3;
+	}
+
+	return 0;
+}
