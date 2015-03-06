@@ -164,5 +164,12 @@ int solver_submit_anagrams(solver_t * this, char const * * anagrams,
 		return -3;
 	}
 
+	rc = client_recv_ign(this->client);
+
+	if (rc != 0) {
+		ERROR("Received invalid server reply.");
+		return -4;
+	}
+
 	return 0;
 }

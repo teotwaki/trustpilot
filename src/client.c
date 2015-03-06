@@ -154,6 +154,20 @@ char * client_recv(client_t * this) {
 	return payload;
 }
 
+int client_recv_ign(client_t * this) {
+	DEBUG("Listening for new message.");
+	int rc = 0;
+
+	rc = zmq_recv(this->sock, NULL, 0, ZMQ_NOFLAGS);
+
+	if (rc == -1) {
+		VERROR("Couldn't receive message: %s", ZMQ_ERROR);
+		return -1;
+	}
+
+	return 0;
+}
+
 json_object * client_recv_json(client_t * this) {
 	DEBUG("Listening for JSON message.");
 

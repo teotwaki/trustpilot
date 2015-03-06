@@ -29,6 +29,7 @@ int client_destroy(client_t * this);
 // Communication with server
 int client_send(client_t * this, char const * payload);
 char * client_recv(client_t * this);
+int client_recv_ign(client_t * this);
 json_object * client_recv_json(client_t * this);
 
 #endif
