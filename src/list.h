@@ -8,12 +8,12 @@
 
 #define LIST_INITIAL_SIZE 64
 
-typedef  struct _list_t list_t;
+typedef struct _list_t list_t;
 
 struct _list_t {
 	char * * anagrams;
 	int anagrams_count;
-	int list_size;
+	int capacity;
 };
 
 // Constructor/destructor
@@ -23,14 +23,5 @@ int list_destroy(list_t * this);
 // List modifiers
 int list_append(list_t * this, char * item);
 int list_grow(list_t * this);
-
-// Helper macros
-#define list_foreach(list, name) \
-	int __l_i; char * name; \
-	for (__l_i = 0, \
-			name = list->anagrams[__l_i]; \
-			__l_i < list->anagrams_count; \
-			++__l_i, \
-			name = list->anagrams[__l_i])
 
 #endif

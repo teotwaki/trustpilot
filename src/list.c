@@ -13,7 +13,7 @@ list_t * list_init() {
 
 	this->anagrams = NULL;
 	this->anagrams_count = 0;
-	this->list_size = 0;
+	this->capacity = 0;
 
 	return this;
 }
@@ -22,16 +22,17 @@ int list_destroy(list_t * this) {
 	INFO("Destroying anagram list.");
 
 	if (this->anagrams != NULL) {
-		list_foreach(this, anagram) {
-			if (anagram != NULL) {
-				free(anagram);
-				anagram = NULL;
+		for (int i = 0; i < this->anagrams_count; i++)
+			if (this->anagrams[i] != NULL) {
+				free(this->anagrams[i]);
+				this->anagrams[i] = NULL;
 			}
-		}
 
 		free(this->anagrams);
 		this->anagrams = NULL;
 	}
+
+	free(this);
 
 	return 0;
 }
@@ -39,7 +40,7 @@ int list_destroy(list_t * this) {
 int list_append(list_t * this, char * item) {
 	int rc = 0;
 
-	if (this->anagrams_count >= this->list_size) {
+	if (this->anagrams_count >= this->capacity) {
 		rc = list_grow(this);
 
 		if (rc != 0) {
@@ -54,12 +55,17 @@ int list_append(list_t * this, char * item) {
 }
 
 int list_grow(list_t * this) {
-	int new_size = 0;
+	int new_size, new_capacity = 0;
 
 	if (this->anagrams == NULL)
-		new_size = sizeof(char *) * LIST_INITIAL_SIZE;
+		new_capacity = LIST_INITIAL_SIZE;
 	else
-		new_size = sizeof(char *) * this->list_size * 2;
+		new_capacity = this->capacity * 2;
+
+	new_size = new_capacity * sizeof(char *);
+
+	VDEBUG("Growing list capacity up to %d items (previously %d).",
+			new_capacity, this->capacity);
 
 	char * * new_anagrams = malloc(new_size);
 
@@ -71,12 +77,12 @@ int list_grow(list_t * this) {
 	memset(new_anagrams, 0, new_size);
 
 	if (this->anagrams != NULL) {
-		memcpy(new_anagrams, this->anagrams, sizeof(char * ) * this->list_size);
+		memcpy(new_anagrams, this->anagrams, this->capacity * sizeof(char *));
 		free(this->anagrams);
 	}
 
 	this->anagrams = new_anagrams;
-	this->list_size = new_size;
+	this->capacity = new_capacity;
 
 	return 0;
 }
