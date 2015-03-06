@@ -112,7 +112,12 @@ int solver_initialise_words(solver_t * this) {
 		}
 	}
 
-	json_object_put(object);
+	rc = json_object_put(object);
+
+	if (rc != JSON_OBJECT_FREED) {
+		ERROR("JSON object was not freed.");
+		return -3;
+	}
 
 	VDEBUG("Received %d words.", this->words_count);
 
