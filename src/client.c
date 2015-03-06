@@ -39,6 +39,17 @@ client_t * client_init(char const * endpoint) {
 		return NULL;
 	}
 
+	int timeout = 1000;
+	rc = zmq_setsockopt(this->sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+
+	if (rc != 0) {
+		VERROR("Couldn't set ZMQ_RECVTIMEO option to 1000: %s", ZMQ_ERROR);
+		client_destroy(this);
+		return NULL;
+	}
+
+	VINFO("Attempting to connect to %s", endpoint);
+
 	rc = zmq_connect(this->sock, endpoint);
 
 	if (rc != 0) {
@@ -172,6 +183,12 @@ json_object * client_recv_json(client_t * this) {
 	DEBUG("Listening for JSON message.");
 
 	char * payload = client_recv(this);
+
+	if (payload == NULL) {
+		ERROR("Couldn't receive message from server.");
+		return NULL;
+	}
+
 	int length = strlen(payload);
 
 	json_object * object = json_tokener_parse_ex(
