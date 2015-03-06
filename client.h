@@ -10,6 +10,7 @@
 
 #define ZMQ_THREADS 1
 #define ZMQ_NOFLAGS 0
+#define ZMQ_ERROR zmq_strerror(errno)
 
 #define CLIENT_GET_WORDS "{\"type\":\"get_words\"}"
 

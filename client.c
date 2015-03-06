@@ -17,14 +17,14 @@ client_t * client_init(char const * endpoint) {
 	this->ctx = zmq_init(ZMQ_THREADS);
 
 	if (this->ctx == NULL) {
-		ERROR("Couldn't initialise ZMQ context.");
+		VERROR("Couldn't initialise ZMQ context: %s", ZMQ_ERROR);
 		return NULL;
 	}
 
 	this->sock = zmq_socket(this->ctx, ZMQ_REQ);
 
 	if (this->sock == NULL) {
-		ERROR("Couldn't create a socket.");
+		VERROR("Couldn't create a socket: %s", ZMQ_ERROR);
 		client_destroy(this);
 		return NULL;
 	}
@@ -32,7 +32,7 @@ client_t * client_init(char const * endpoint) {
 	rc = zmq_connect(this->sock, endpoint);
 
 	if (rc != 0) {
-		ERROR("Couldn't connect to server.");
+		VERROR("Couldn't connect to server: %s", ZMQ_ERROR);;
 		return NULL;
 	}
 
@@ -48,7 +48,7 @@ int client_destroy(client_t * this) {
 		rc = zmq_close(this->sock);
 
 		if (rc != 0) {
-			ERROR("Couldn't close ZMQ socket.");
+			VERROR("Couldn't close ZMQ socket: %s", ZMQ_ERROR);
 			return -1;
 		}
 
@@ -59,7 +59,7 @@ int client_destroy(client_t * this) {
 		rc = zmq_term(this->ctx);
 
 		if (rc != 0) {
-			ERROR("Couldn't terminate ZMQ context.");
+			VERROR("Couldn't terminate ZMQ context: %s", ZMQ_ERROR);
 			return -2;
 		}
 
@@ -81,7 +81,7 @@ int client_send(client_t * this, char const * payload) {
 	int rc = zmq_msg_init_size(&msg, length);
 
 	if (rc != 0) {
-		ERROR("Couldn't initialise ZMQ message.");
+		VERROR("Couldn't initialise ZMQ message: %s", ZMQ_ERROR);
 		return -1;
 	}
 
@@ -90,7 +90,7 @@ int client_send(client_t * this, char const * payload) {
 	rc = zmq_msg_send(this->sock, &msg, ZMQ_NOFLAGS);
 
 	if (rc != 0) {
-		ERROR("Couldn't send message to server.");
+		VERROR("Couldn't send message to server: %s", ZMQ_ERROR);
 		return -2;
 	}
 
@@ -105,14 +105,14 @@ char * client_recv(client_t * this) {
 	int rc = zmq_msg_init(&msg);
 
 	if (rc != 0) {
-		ERROR("Couldn't initialise ZMQ message.");
+		VERROR("Couldn't initialise ZMQ message: %s", ZMQ_ERROR);
 		return NULL;
 	}
 
 	rc = zmq_msg_recv(this->sock, &msg, ZMQ_NOFLAGS);
 
 	if (rc != 0) {
-		ERROR("Couldn't receive message.");
+		VERROR("Couldn't receive message: %s", ZMQ_ERROR);
 		return NULL;
 	}
 
