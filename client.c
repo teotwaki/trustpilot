@@ -11,25 +11,25 @@ client_t * client_init(char const * endpoint) {
 		return NULL;
 	}
 
-	this->context = NULL;
-	this->socket = NULL;
+	this->ctx = NULL;
+	this->sock = NULL;
 
-	this->context = zmq_init(ZMQ_THREADS);
+	this->ctx = zmq_init(ZMQ_THREADS);
 
-	if (this->context == NULL) {
+	if (this->ctx == NULL) {
 		ERROR("Couldn't initialise ZMQ context.");
 		return NULL;
 	}
 
-	this->socket = zmq_socket(this->context, ZMQ_REQ);
+	this->sock = zmq_socket(this->ctx, ZMQ_REQ);
 
-	if (this->socket == NULL) {
+	if (this->sock == NULL) {
 		ERROR("Couldn't create a socket.");
 		client_destroy(this);
 		return NULL;
 	}
 
-	rc = zmq_connect(this->socket, endpoint);
+	rc = zmq_connect(this->sock, endpoint);
 
 	if (rc != 0) {
 		ERROR("Couldn't connect to server.");
@@ -44,26 +44,26 @@ int client_destroy(client_t * this) {
 
 	int rc = 0;
 
-	if (this->socket != NULL) {
-		rc = zmq_close(this->socket);
+	if (this->sock != NULL) {
+		rc = zmq_close(this->sock);
 
 		if (rc != 0) {
 			ERROR("Couldn't close ZMQ socket.");
 			return -1;
 		}
 
-		this->socket = NULL;
+		this->sock = NULL;
 	}
 
-	if (this->context != NULL) {
-		rc = zmq_term(this->context);
+	if (this->ctx != NULL) {
+		rc = zmq_term(this->ctx);
 
 		if (rc != 0) {
 			ERROR("Couldn't terminate ZMQ context.");
 			return -2;
 		}
 
-		this->context = NULL;
+		this->ctx = NULL;
 	}
 
 	free(this);
@@ -87,7 +87,7 @@ int client_send(client_t * this, char const * payload) {
 
 	memcpy(zmq_msg_data(&msg), payload, length);
 
-	rc = zmq_msg_send(this->socket, &msg, ZMQ_NOFLAGS);
+	rc = zmq_msg_send(this->sock, &msg, ZMQ_NOFLAGS);
 
 	if (rc != 0) {
 		ERROR("Couldn't send message to server.");
@@ -109,7 +109,7 @@ char * client_recv(client_t * this) {
 		return NULL;
 	}
 
-	rc = zmq_msg_recv(this->socket, &msg, ZMQ_NOFLAGS);
+	rc = zmq_msg_recv(this->sock, &msg, ZMQ_NOFLAGS);
 
 	if (rc != 0) {
 		ERROR("Couldn't receive message.");

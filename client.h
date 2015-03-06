@@ -16,8 +16,8 @@
 typedef struct _client_t client_t;
 
 struct _client_t {
-	void * context;
-	void * socket;
+	void * ctx;
+	void * sock;
 };
 
 // Constructor/destructor
