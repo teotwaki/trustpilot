@@ -252,24 +252,123 @@ int solver_has_current_word(solver_t * this) {
 	return this->current_word != NULL;
 }
 
-int solver_find_anagrams(solver_t * this) {
-	if (this->anagrams != NULL) {
-		for (int i = 0; i < this->anagrams->anagrams_count; i++)
-			VDEBUG("Anagram: %s", list_get(this->anagrams, i));
+bool exists_in_pool(char const * pool, char const * word) {
+	char * tmp_pool = strdup(pool);
+	char * match = NULL;
+
+	while (*word != '\0') {
+		if (*word == ' ') {
+			word++;
+			continue;
+		}
+
+		match = strchr(tmp_pool, *word);
+
+		if (match != NULL) {
+			*match = '.';
+			word++;
+		}
+
+		else
+			break;
 	}
 
-	return 0;
+	free(tmp_pool);
+
+	return *word == '\0';
+}
+
+char * remove_from_pool(char const * pool, char const * word) {
+	char * new_pool = strdup(pool);
+	char * new_pool_iter = new_pool;
+	char * tmp_pool = strdup(pool);
+	char const * tmp_pool_iter = tmp_pool;
+	char * match = NULL;
+
+	while (*word != '\0') {
+		match = strchr(tmp_pool, *word++);
+
+		if (match != NULL)
+			*match = '.';
+	}
+
+	while (*tmp_pool_iter != '\0') {
+		if (*tmp_pool_iter != '.')
+			*new_pool_iter++ = *tmp_pool_iter;
+		tmp_pool_iter++;
+	}
+
+	*new_pool_iter = '\0';
+
+	free(tmp_pool);
+
+	return new_pool;
+}
+
+int solver_build_anagrams(solver_t * this,
+		char const * current_pool, char const * current_anagram)
+{
+	char const * word = NULL;
+	int anagrams_count = 0;
+	char * anagram = NULL;
+	char * new_pool = NULL;
+	int anagram_length = 0;
+
+	for (int i = 0; i < this->words_count; i++) {
+		word = this->words[i];
+
+		if (exists_in_pool(current_pool, word)) {
+			anagram_length = strlen(current_anagram)
+				+ strlen(word) + 2;
+
+			anagram = malloc(anagram_length);
+			sprintf(anagram, "%s %s", current_anagram,
+					word);
+
+			new_pool = remove_from_pool(current_pool,
+					word);
+
+			if (strlen(new_pool) == 0) {
+				list_append(this->anagrams, anagram);
+				anagrams_count++;
+			}
+
+			else if (strlen(new_pool) > 3) {
+				anagrams_count += solver_build_anagrams(this,
+						new_pool, anagram);
+				free(anagram);
+				anagram = NULL;
+			}
+
+			else {
+				free(anagram);
+				anagram = NULL;
+			}
+
+			free(new_pool);
+			new_pool = NULL;
+		}
+
+	}
+
+	return anagrams_count;
 }
 
 int solver_loop(solver_t * this) {
-	int rc = 0;
-	int anagrams = 0;
 	int total_anagrams = 0;
+	char * pool = NULL;
 
 	while (solver_has_current_word(this)) {
-		anagrams = solver_find_anagrams(this);
-		total_anagrams += anagrams;
+		if (exists_in_pool(this->seed, this->current_word)) {
+			pool = remove_from_pool(this->seed,
+					this->current_word);
+			total_anagrams += solver_build_anagrams(this,
+					pool, this->current_word);
+			free(pool);
+		}
+
+		solver_next_word(this);
 	}
 
-	return rc;
+	return total_anagrams;
 }
