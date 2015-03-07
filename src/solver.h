@@ -23,7 +23,7 @@ struct _solver_t {
 };
 
 // Constructor/destructor
-solver_t * solver_init(char const * endpoint);
+solver_t * solver_init(void * zmq_ctx, char const * endpoint);
 int solver_destroy(solver_t * this);
 
 // Server communications

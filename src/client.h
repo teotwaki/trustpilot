@@ -8,7 +8,6 @@
 
 #include "log.h"
 
-#define ZMQ_THREADS 1
 #define ZMQ_NOFLAGS 0
 #define ZMQ_ERROR zmq_strerror(errno)
 
@@ -24,7 +23,7 @@ struct _client_t {
 };
 
 // Constructor/destructor
-client_t * client_init(char const * endpoint);
+client_t * client_init(void * zmq_ctx, char const * endpoint);
 int client_destroy(client_t * this);
 
 // Communication with server

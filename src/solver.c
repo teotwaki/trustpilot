@@ -1,6 +1,6 @@
 #include "solver.h"
 
-solver_t * solver_init(char const * endpoint) {
+solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 	DEBUG("Initialising new solver.");
 
 	int rc = 0;
@@ -18,7 +18,7 @@ solver_t * solver_init(char const * endpoint) {
 	this->current_word = NULL;
 	this->anagrams = NULL;
 
-	this->client = client_init(endpoint);
+	this->client = client_init(zmq_ctx, endpoint);
 
 	if (this->client == NULL) {
 		ERROR("Couldn't initialise client_t instance.");

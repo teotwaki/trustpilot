@@ -1,6 +1,6 @@
 #include "client.h"
 
-client_t * client_init(char const * endpoint) {
+client_t * client_init(void * zmq_ctx, char const * endpoint) {
 	DEBUG("Initialising new client.");
 
 	int rc = 0;
@@ -11,16 +11,9 @@ client_t * client_init(char const * endpoint) {
 		return NULL;
 	}
 
-	this->ctx = NULL;
+	this->ctx = zmq_ctx;
 	this->sock = NULL;
 	this->tokener = NULL;
-
-	this->ctx = zmq_init(ZMQ_THREADS);
-
-	if (this->ctx == NULL) {
-		VERROR("Couldn't initialise ZMQ context: %s", ZMQ_ERROR);
-		return NULL;
-	}
 
 	this->sock = zmq_socket(this->ctx, ZMQ_REQ);
 
@@ -83,18 +76,6 @@ int client_destroy(client_t * this) {
 		}
 
 		this->sock = NULL;
-	}
-
-	if (this->ctx != NULL) {
-
-		rc = zmq_ctx_term(this->ctx);
-
-		if (rc != 0) {
-			VERROR("Couldn't terminate ZMQ context: %s", ZMQ_ERROR);
-			return -2;
-		}
-
-		this->ctx = NULL;
 	}
 
 	if (this->tokener != NULL) {
