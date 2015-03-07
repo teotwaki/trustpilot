@@ -181,8 +181,14 @@ int solver_next_word(solver_t * this) {
 				this->current_word = NULL;
 			}
 
-			if (!json_object_is_type(val, json_type_null))
-				this->current_word = strdup(json_object_get_string(val));
+			if (!json_object_is_type(val, json_type_null)) {
+				this->current_word = strdup(
+						json_object_get_string(val));
+				VDEBUG("Received new word to process: %s",
+						this->current_word);
+			}
+			else
+				INFO("Server sent NULL. Nothing more to do.");
 		}
 	}
 
@@ -192,8 +198,6 @@ int solver_next_word(solver_t * this) {
 		ERROR("JSON object was not freed.");
 		return -3;
 	}
-
-	VDEBUG("Received new word to process: %s", this->current_word);
 
 	return 0;
 }
