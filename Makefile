@@ -1,7 +1,7 @@
 TARGET = solver
 LIBS = -lzmq -ljson-c
 CC = gcc
-CFLAGS = -m64 -std=gnu99 -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual \
+CFLAGS = -m64 -std=gnu11 -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual \
          -Wstrict-prototypes -Wmissing-prototypes -Werror -Wextra -O3 -g
 GRIND = valgrind
 GRIND_OPTS = --leak-check=full
