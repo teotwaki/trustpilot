@@ -229,7 +229,7 @@ int solver_next_word(solver_t * this) {
 	return 0;
 }
 
-int solver_submit_results(solver_t * this, char const * match)
+int solver_submit_results(solver_t * this, char const * match, int duration)
 {
 	json_object * object = json_object_new_object();
 	int rc = 0;
@@ -254,6 +254,9 @@ int solver_submit_results(solver_t * this, char const * match)
 
 		json_object_object_add(object, "current_word",
 				json_object_new_string(this->current_word));
+
+		json_object_object_add(object, "duration",
+				json_object_new_int(duration));
 	}
 
 	rc = client_send(this->client,
@@ -408,8 +411,11 @@ char const * solver_verify_hashes(solver_t * this) {
 void solver_loop(solver_t * this) {
 	char * pool = NULL;
 	char const * match = NULL;
+	struct timeval start, end;
 
 	while (solver_has_current_word(this)) {
+		gettimeofday(&start, NULL);
+
 		if (exists_in_pool(this->seed, this->current_word)) {
 			pool = remove_from_pool(this->seed,
 					this->current_word);
@@ -419,7 +425,10 @@ void solver_loop(solver_t * this) {
 
 		match = solver_verify_hashes(this);
 
-		solver_submit_results(this, match);
+		gettimeofday(&end, NULL);
+
+		solver_submit_results(this, match,
+				microseconds(end) - microseconds(start));
 
 		list_reset(this->anagrams);
 		solver_next_word(this);

@@ -5,6 +5,7 @@
 #include <openssl/md5.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "list.h"
 #include "log.h"
@@ -12,6 +13,8 @@
 
 #define JSON_OBJECT_FREED 1
 #define MD5_DIGEST_SIZE 16
+#define microseconds(tv) \
+	(1000000 * tv.tv_sec + tv.tv_usec)
 
 typedef struct _solver_t solver_t;
 
@@ -32,7 +35,7 @@ int solver_destroy(solver_t * this);
 // Server communications
 int solver_initialise_words(solver_t * this);
 int solver_next_word(solver_t * this);
-int solver_submit_results(solver_t * this, char const * match);
+int solver_submit_results(solver_t * this, char const * match, int duration);
 
 // Object inspection
 int solver_has_current_word(solver_t * this);
