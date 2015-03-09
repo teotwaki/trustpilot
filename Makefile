@@ -1,5 +1,5 @@
 TARGET = solver
-LIBS = -lzmq -ljson-c -lpthread
+LIBS = -lzmq -ljson-c -lpthread -lcrypto
 CC = gcc
 CFLAGS = -m64 -std=gnu11 -pedantic -Wall -Wshadow -Wpointer-arith -Wcast-qual \
          -Wstrict-prototypes -Wmissing-prototypes -Werror -Wextra -O3 -g
