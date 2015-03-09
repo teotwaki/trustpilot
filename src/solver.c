@@ -128,6 +128,27 @@ int solver_initialise_words(solver_t * this) {
 			this->seed = strdup(json_object_get_string(val));
 		}
 
+		else if (strcmp(key, "hash") == 0) {
+			if (this->digest != NULL) {
+				WARN("solver_t's digest was not empty before calling "
+						"initialise_words. Releasing memory.");
+				free(this->digest);
+			}
+
+			this->digest = malloc(sizeof(unsigned char) * MD5_DIGEST_SIZE);
+			unsigned char * digest_iter = this->digest;
+			unsigned int tmp = 0;
+
+			for (char const * input_iter = json_object_get_string(val);
+					*input_iter != '\0';
+					input_iter += 2)
+			{
+				sscanf(input_iter, "%02x", &tmp);
+				*digest_iter++ = tmp;
+			}
+
+		}
+
 		else {
 			if (this->words != NULL) {
 				WARN("solver_t's words list was not empty before calling "
