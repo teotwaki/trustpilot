@@ -20,24 +20,24 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 	VDEBUG("%s", msg)
 
 #define VDEBUG(format, ...) \
-	_LOG(stdout, "DEBUG", format, __VA_ARGS__)
+	_LOG(stdout, "[DEBUG]", format, __VA_ARGS__)
 
 #define INFO(msg) \
 	VINFO("%s", msg)
 
 #define VINFO(format, ...) \
-	_LOG(stdout, "INFO", format, __VA_ARGS__)
+	_LOG(stdout, "[INFO ]", format, __VA_ARGS__)
 
 #define WARN(msg) \
 	VWARN("%s", msg)
 
 #define VWARN(format, ...) \
-	_LOG(stdout, "WARN", format, __VA_ARGS__)
+	_LOG(stdout, "[WARN ]", format, __VA_ARGS__)
 
 #define ERROR(msg) \
 	VERROR("%s", msg)
 
 #define VERROR(format, ...) \
-	_LOG(stderr, "ERROR", format, __VA_ARGS__)
+	_LOG(stderr, "[ERROR]", format, __VA_ARGS__)
 
 #endif

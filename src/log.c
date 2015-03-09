@@ -28,8 +28,8 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 
 	pthread_mutex_lock(&logger_lock);
 
-	fprintf(fp, "%s - [%s] - %s:%d - %p - ", iso_buffer, tag, filename, line,
-			(void *)thread);
+	fprintf(fp, "%s - %s - %p - %s:%d - ", iso_buffer, tag, (void *)thread,
+			filename, line);
 
 	va_list ap;
 	va_start(ap, format);
