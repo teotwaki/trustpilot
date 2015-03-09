@@ -65,6 +65,7 @@ void * run(void * zmq_ctx) {
 
 int main() {
 	void * ctx = zmq_init(ZMQ_THREADS);
+	logger_init();
 
 	int num_threads = get_num_threads();
 

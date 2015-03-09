@@ -1,5 +1,20 @@
 #include "log.h"
 
+int logger_init() {
+	int rc = 0;
+
+	rc = pthread_mutex_init(&logger_lock, NULL);
+
+	if (rc != 0) {
+		printf("Logger initialisation failed (failed to initialise mutex).");
+		return -1;
+	}
+
+	DEBUG("Logger initialised.");
+
+	return 0;
+}
+
 void _log(FILE * fp, char const * tag, char const * filename, int line,
 		char const * format, ...) {
 	time_t now;
@@ -11,6 +26,8 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 
 	pthread_t thread = pthread_self();
 
+	pthread_mutex_lock(&logger_lock);
+
 	fprintf(fp, "%s - [%s] - %s:%d - %p - ", iso_buffer, tag, filename, line,
 			(void *)thread);
 
@@ -20,4 +37,6 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 	va_end(ap);
 
 	fprintf(fp, "\n");
+
+	pthread_mutex_unlock(&logger_lock);
 }

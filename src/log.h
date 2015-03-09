@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <time.h>
 
+pthread_mutex_t logger_lock;
+
+int logger_init(void);
+
 void _log(FILE * fp, char const * tag, char const * filename, int line,
 		char const * format, ...);
 
