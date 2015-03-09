@@ -15,6 +15,7 @@
 #define MD5_DIGEST_SIZE 16
 #define microseconds(tv) \
 	(1000000 * tv.tv_sec + tv.tv_usec)
+#define MIN_WORD_LENGTH 2
 
 typedef struct _solver_t solver_t;
 

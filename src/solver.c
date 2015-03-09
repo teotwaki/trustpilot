@@ -369,7 +369,7 @@ int solver_build_anagrams(solver_t * this,
 				anagrams_count++;
 			}
 
-			else if (strlen(new_pool) > 3) {
+			else if (strlen(new_pool) > MIN_WORD_LENGTH) {
 				anagrams_count += solver_build_anagrams(this,
 						new_pool, anagram);
 				free(anagram);
