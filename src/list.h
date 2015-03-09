@@ -26,5 +26,6 @@ char * list_get(list_t * this, int idx);
 // List modifiers
 int list_append(list_t * this, char * item);
 int list_grow(list_t * this);
+void list_reset(list_t * this);
 
 #endif

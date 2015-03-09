@@ -21,12 +21,7 @@ list_t * list_init() {
 int list_destroy(list_t * this) {
 	INFO("Destroying anagram list.");
 
-	if (this->anagrams != NULL) {
-		for (int i = 0; i < this->anagrams_count; i++)
-			if (this->anagrams[i] != NULL) {
-				free(this->anagrams[i]);
-				this->anagrams[i] = NULL;
-			}
+	list_reset(this);
 
 		free(this->anagrams);
 		this->anagrams = NULL;
@@ -92,4 +87,15 @@ int list_grow(list_t * this) {
 	this->capacity = new_capacity;
 
 	return 0;
+}
+
+void list_reset(list_t * this) {
+	if (this->anagrams != NULL) {
+		for (int i = 0; i < this->anagrams_count; i++)
+			if (this->anagrams[i] != NULL) {
+				free(this->anagrams[i]);
+				this->anagrams[i] = NULL;
+			}
+		this->anagrams_count = 0;
+	}
 }
