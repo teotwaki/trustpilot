@@ -17,6 +17,7 @@ solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 	this->words_count = 0;
 	this->current_word = NULL;
 	this->anagrams = NULL;
+	this->digest = NULL;
 
 	this->client = client_init(zmq_ctx, endpoint);
 
@@ -86,6 +87,11 @@ int solver_destroy(solver_t * this) {
 	if (this->anagrams != NULL) {
 		list_destroy(this->anagrams);
 		this->anagrams = NULL;
+	}
+
+	if (this->digest != NULL) {
+		free(this->digest);
+		this->digest = NULL;
 	}
 
 	free(this);

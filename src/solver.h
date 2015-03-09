@@ -2,6 +2,7 @@
 #define SOLVER_H__
 
 #include <json-c/json.h>
+#include <openssl/md5.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -10,6 +11,7 @@
 #include "client.h"
 
 #define JSON_OBJECT_FREED 1
+#define MD5_DIGEST_SIZE 16
 
 typedef struct _solver_t solver_t;
 
@@ -20,6 +22,7 @@ struct _solver_t {
 	char * current_word;
 	client_t * client;
 	list_t * anagrams;
+	unsigned char * digest;
 };
 
 // Constructor/destructor
