@@ -42,6 +42,7 @@ bool exists_in_pool(char const * pool, char const * word);
 char * remove_from_pool(char const * pool, char const * word);
 int solver_build_anagrams(solver_t * this,
 		char const * current_pool, char const * current_anagram);
-int solver_loop(solver_t * this);
+char const * solver_verify_hashes(solver_t * this);
+void solver_loop(solver_t * this);
 
 #endif

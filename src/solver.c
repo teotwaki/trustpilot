@@ -384,21 +384,41 @@ int solver_build_anagrams(solver_t * this,
 	return anagrams_count;
 }
 
-int solver_loop(solver_t * this) {
-	int total_anagrams = 0;
+char const * solver_verify_hashes(solver_t * this) {
+	unsigned char digest[MD5_DIGEST_SIZE];
+	char * anagram = NULL;
+
+	for (int i = 0; i < this->anagrams->anagrams_count; i++) {
+		anagram = list_get(this->anagrams, i);
+
+		MD5((unsigned char *)anagram, strlen(anagram), digest);
+
+		if (memcmp(digest, this->digest, MD5_DIGEST_SIZE) == 0) {
+			VDEBUG("Found anagram match! `%s`", anagram);
+			return anagram;
+		}
+	}
+
+	return NULL;
+}
+
+void solver_loop(solver_t * this) {
 	char * pool = NULL;
+	char const * match = NULL;
 
 	while (solver_has_current_word(this)) {
 		if (exists_in_pool(this->seed, this->current_word)) {
 			pool = remove_from_pool(this->seed,
 					this->current_word);
-			total_anagrams += solver_build_anagrams(this,
-					pool, this->current_word);
+			solver_build_anagrams(this, pool, this->current_word);
 			free(pool);
 		}
 
+		match = solver_verify_hashes(this);
+
+		solver_submit_results(this, match);
+
+		list_reset(this->anagrams);
 		solver_next_word(this);
 	}
-
-	return total_anagrams;
 }
