@@ -251,6 +251,9 @@ int solver_submit_results(solver_t * this, char const * match)
 
 		json_object_object_add(object, "anagrams_count",
 				json_object_new_int(this->anagrams->anagrams_count));
+
+		json_object_object_add(object, "current_word",
+				json_object_new_string(this->current_word));
 	}
 
 	rc = client_send(this->client,
