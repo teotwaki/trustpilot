@@ -23,6 +23,7 @@ int list_destroy(list_t * this) {
 
 	list_reset(this);
 
+	if (this->anagrams != NULL) {
 		free(this->anagrams);
 		this->anagrams = NULL;
 	}
