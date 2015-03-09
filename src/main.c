@@ -35,7 +35,6 @@ int get_num_threads() {
 void * run(void * zmq_ctx) {
 	VDEBUG("Spawned worker thread (id: %p).", pthread_self());
 
-	int rc = 0;
 	solver_t * solver = NULL;
 
 	{
@@ -51,13 +50,7 @@ void * run(void * zmq_ctx) {
 		pthread_exit(NULL);
 	}
 
-	rc = solver_loop(solver);
-
-	if (rc != 0) {
-		ERROR("Solver failed to finish its loop.");
-		solver_destroy(solver);
-		pthread_exit(NULL);
-	}
+	solver_loop(solver);
 
 	solver_destroy(solver);
 	return NULL;
