@@ -12,16 +12,24 @@ char * get_host() {
 	return strdup(host);
 }
 
-int get_num_threads() {
-	char const * threads = getenv("SOLVER_THREADS");
+int get_num_cores() {
+	return sysconf(_SC_NPROCESSORS_ONLN);
+}
 
-	if (threads == NULL) {
+int get_num_threads() {
+	char const * threads_envvar = getenv("SOLVER_THREADS");
+	int threads = 0;
+
+	if (threads_envvar == NULL) {
 		WARN("Environment variable SOLVER_THREADS not set.");
-		threads = "2";
-		VINFO("Defaulting to %s.", threads);
+		threads = get_num_cores();
+		VINFO("Defaulting to %d.", threads);
 	}
 
-	return atoi(threads);
+	else
+		threads = atoi(threads_envvar);
+
+	return threads;
 }
 
 void * run(void * zmq_ctx) {
