@@ -229,8 +229,7 @@ int solver_next_word(solver_t * this) {
 	return 0;
 }
 
-int solver_submit_anagrams(solver_t * this, char const * * anagrams,
-		int anagrams_count)
+int solver_submit_results(solver_t * this, char const * match)
 {
 	json_object * object = json_object_new_object();
 	int rc = 0;
@@ -242,16 +241,16 @@ int solver_submit_anagrams(solver_t * this, char const * * anagrams,
 
 	{
 		json_object_object_add(object, "type",
-				json_object_new_string("found_anagrams"));
+				json_object_new_string("results"));
 
-		json_object * array = json_object_new_array();
+		if (match != NULL)
+			json_object_object_add(object, "match",
+					json_object_new_string(match));
+		else
+			json_object_object_add(object, "match", NULL);
 
-		for (int i = 0; i < anagrams_count; i++) {
-			json_object_array_add(array,
-					json_object_new_string(anagrams[i]));
-		}
-
-		json_object_object_add(object, "result", array);
+		json_object_object_add(object, "anagrams_count",
+				json_object_new_int(this->anagrams->anagrams_count));
 	}
 
 	rc = client_send(this->client,
