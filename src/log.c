@@ -9,7 +9,10 @@ void _log(FILE * fp, char const * tag, char const * filename, int line,
 	tm_info = localtime(&now);
 	strftime(iso_buffer, 25, "%FT%T%z", tm_info);
 
-	fprintf(fp, "%s - [%s] - %s:%d - ", iso_buffer, tag, filename, line);
+	pthread_t thread = pthread_self();
+
+	fprintf(fp, "%s - [%s] - %s:%d - %p - ", iso_buffer, tag, filename, line,
+			(void *)thread);
 
 	va_list ap;
 	va_start(ap, format);

@@ -33,6 +33,8 @@ int get_num_threads() {
 }
 
 void * run(void * zmq_ctx) {
+	VDEBUG("Spawned worker thread (id: %p).", pthread_self());
+
 	int rc = 0;
 	solver_t * solver = NULL;
 
