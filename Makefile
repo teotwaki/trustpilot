@@ -11,16 +11,18 @@ SRC_DIR    := src
 TEST_DIR   := tests
 TESTS      := test_is_anagram test_is_plausible_anagram test_count_letters
 
-.PHONY: default all clean grind run tests
-
 all: $(TARGET)
 
 OBJECTS      := $(SRC_DIR)/client.o $(SRC_DIR)/list.o $(SRC_DIR)/log.o \
                 $(SRC_DIR)/solver.o
 MAIN_OBJECTS := $(SRC_DIR)/main.o
 TEST_OBJECTS := $(patsubst %,$(TEST_DIR)/%.o,$(TESTS))
+TESTS_RUN    := $(patsubst %,%-run,$(TESTS))
+TESTS_GRIND  := $(patsubst %,%-grind,$(TESTS))
 
-.PRECIOUS: $(TARGET) $(TESTS) $(OBJECTS) $(MAIN_OBJECTS) $(TEST_OBJECTS)
+.PHONY: default all clean grind run tests tests-grind
+
+.PRECIOUS: $(TARGET) $(OBJECTS) $(MAIN_OBJECTS) $(TEST_OBJECTS)
 
 $(TARGET): $(OBJECTS) $(MAIN_OBJECTS)
 	$(CC) $^ $(LFLAGS) $(LIBS) -o $@
@@ -32,13 +34,15 @@ clean:
 grind: all
 	$(GRIND) $(GRIND_OPTS) ./$(TARGET)
 
-run: all
-	./$(TARGET)
+tests: $(TESTS_RUN)
 
-tests: $(TESTS)
-	@for test in $(TESTS); do \
-		./$$test && echo "$$test: OK" || echo "$$test: FAIL"; \
-	done
+tests-grind: $(TESTS_GRIND)
+
+test_%-grind: test_%
+	$(GRIND) $(GRIND_OPTS) ./$^
+
+test_%-run: test_%
+	./$^ && echo "$^: OK" || echo "$^: FAIL"
 
 test_%: $(OBJECTS) $(TEST_DIR)/test_%.o
 	$(CC) $^ $(CFLAGS) -Wall $(LIBS) -o $@
