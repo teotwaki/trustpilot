@@ -2,8 +2,6 @@
 
 #include "solver.h"
 
-int main(void);
-
 int main(void) {
 	char const * first = NULL;
 	char const * second = NULL;
@@ -22,6 +20,4 @@ int main(void) {
 	second = "acc just some length and stuff";
 
 	assert(is_anagram(first, second) == false);
-
-	return 0;
 }
