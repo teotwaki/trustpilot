@@ -36,6 +36,9 @@ run: all
 	./$(TARGET)
 
 tests: $(TESTS)
+	@for test in $(TESTS); do \
+		./$$test && echo "$$test: OK" || echo "$$test: FAIL"; \
+	done
 
 test_%: $(OBJECTS) $(TEST_DIR)/test_%.o
 	$(CC) $^ $(CFLAGS) -Wall $(LIBS) -o $@
