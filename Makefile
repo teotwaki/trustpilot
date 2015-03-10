@@ -9,7 +9,7 @@ GRIND      := valgrind
 GRIND_OPTS := --leak-check=full
 SRC_DIR    := src
 TEST_DIR   := tests
-TESTS      := test_is_anagram test_is_plausible_anagram
+TESTS      := test_is_anagram test_is_plausible_anagram test_count_letters
 
 .PHONY: default all clean grind run tests
 
