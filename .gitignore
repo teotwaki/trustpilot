@@ -1,5 +1,9 @@
 # Ignore binary
 solver
 
+# Ignore tests
+test_*
+!tests/test_*.[hc]
+
 # Ignore compilation artifacts
 *.o
