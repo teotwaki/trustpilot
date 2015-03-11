@@ -23,22 +23,25 @@ client_t * client_init(void * zmq_ctx, char const * endpoint) {
 		return NULL;
 	}
 
-	int linger = 0;
-	rc = zmq_setsockopt(this->sock, ZMQ_LINGER, &linger, sizeof(linger));
+	{
+		int linger = 0;
+		int timeout = ZMQ_TIMEOUT;
 
-	if (rc != 0) {
-		VERROR("Couldn't set ZMQ_LINGER option to 0: %s", ZMQ_ERROR);
-		client_destroy(this);
-		return NULL;
-	}
+		rc = zmq_setsockopt(this->sock, ZMQ_LINGER, &linger, sizeof(linger));
 
-	int timeout = 1000;
-	rc = zmq_setsockopt(this->sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+		if (rc != 0) {
+			VERROR("Couldn't set ZMQ_LINGER option to 0: %s", ZMQ_ERROR);
+			client_destroy(this);
+			return NULL;
+		}
 
-	if (rc != 0) {
-		VERROR("Couldn't set ZMQ_RECVTIMEO option to 1000: %s", ZMQ_ERROR);
-		client_destroy(this);
-		return NULL;
+		rc = zmq_setsockopt(this->sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+
+		if (rc != 0) {
+			VERROR("Couldn't set ZMQ_RECVTIMEO option: %s", ZMQ_ERROR);
+			client_destroy(this);
+			return NULL;
+		}
 	}
 
 	VINFO("Attempting to connect to %s", endpoint);

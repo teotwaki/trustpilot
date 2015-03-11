@@ -10,6 +10,7 @@
 
 #define ZMQ_NOFLAGS 0
 #define ZMQ_ERROR zmq_strerror(errno)
+#define ZMQ_TIMEOUT 60000
 
 #define CLIENT_INITIALISE "{\"type\":\"initialise\"}"
 #define CLIENT_NEXT_WORD "{\"type\":\"next_word\"}"
