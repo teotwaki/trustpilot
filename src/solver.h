@@ -59,7 +59,7 @@ bool exists_in_pool(char const * pool, char const * word);
 int count_letters(char const * ptr);
 char * lttrdup(char const * str);
 void remove_from_pool(char * new_pool, char const * pool, char const * word);
-void solver_build_anagrams(solver_t * this, char const * current_pool);
+void solver_build_anagrams(solver_t * this);
 bool solver_is_anagram(solver_t * this);
 bool solver_is_plausible_anagram(solver_t * this);
 void solver_loop(solver_t * this);
