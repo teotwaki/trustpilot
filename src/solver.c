@@ -17,6 +17,12 @@ solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 	this->words_count = 0;
 	this->current_word = NULL;
 	this->digest = NULL;
+	this->current_digest = malloc(sizeof(unsigned char) * MD5_DIGEST_SIZE);
+	this->match = NULL;
+	this->anagrams_count = 0;
+	this->current_anagram = NULL;
+	this->tmp_first = NULL;
+	this->tmp_second = NULL;
 
 	this->client = client_init(zmq_ctx, endpoint);
 
@@ -80,6 +86,31 @@ int solver_destroy(solver_t * this) {
 		this->digest = NULL;
 	}
 
+	if (this->current_digest != NULL) {
+		free(this->current_digest);
+		this->current_digest = NULL;
+	}
+
+	if (this->current_digest != NULL) {
+		free(this->current_digest);
+		this->current_digest = NULL;
+	}
+
+	if (this->current_anagram != NULL) {
+		free(this->current_anagram);
+		this->current_anagram = NULL;
+	}
+
+	if (this->tmp_first != NULL) {
+		free(this->tmp_first);
+		this->tmp_first = NULL;
+	}
+
+	if (this->tmp_second != NULL) {
+		free(this->tmp_second);
+		this->tmp_second = NULL;
+	}
+
 	free(this);
 
 	return 0;
@@ -110,8 +141,22 @@ int solver_initialise_words(solver_t * this) {
 				WARN("solver_t's seed was not empty before calling "
 						"initialise_words. Releasing memory.");
 				free(this->seed);
+				this->seed_length = 0;
 			}
+
 			this->seed = strdup(json_object_get_string(val));
+			this->seed_length = count_letters(this->seed);
+			int buffer_length = this->seed_length * 3;
+			this->current_anagram = malloc(buffer_length);
+
+			if (this->tmp_first != NULL)
+				free(this->tmp_first);
+
+			if (this->tmp_second != NULL)
+				free(this->tmp_second);
+
+			this->tmp_first = malloc(buffer_length);
+			this->tmp_second = malloc(buffer_length);
 		}
 
 		else if (strcmp(key, "hash") == 0) {
@@ -236,7 +281,7 @@ int solver_submit_results(solver_t * this, char const * match, int duration)
 			json_object_object_add(object, "match", NULL);
 
 		json_object_object_add(object, "anagrams_count",
-				json_object_new_int(this->anagrams->anagrams_count));
+				json_object_new_int(this->anagrams_count));
 
 		json_object_object_add(object, "current_word",
 				json_object_new_string(this->current_word));
@@ -300,8 +345,102 @@ bool exists_in_pool(char const * pool, char const * word) {
 	return *word == '\0';
 }
 
-char * remove_from_pool(char const * pool, char const * word) {
-	char * new_pool = strdup(pool);
+int count_letters(char const * ptr) {
+	int count = 0;
+
+	while (*ptr != '\0')
+		if (*ptr++ != ' ')
+			count++;
+
+	return count;
+}
+
+// Return a copy of the letters a string (without spaces)
+char * lttrdup(char const * str) {
+	// Technically, we're wasting a few bytes here, but that's OK.
+	int length = strlen(str) + 1;
+	char * copy = malloc(length);
+	char * tmp = copy;
+	memset(copy, 0, length);
+
+	do {
+		if (*str != ' ')
+			*tmp++ = *str;
+	} while (*str++ != '\0');
+
+	return copy;
+}
+
+bool is_anagram(char const * first, char const * second) {
+	if (is_plausible_anagram(first, second)) {
+		// If the strings are equivalent, they are anagrams
+		if (strcmp(first, second) == 0)
+			return true;
+
+		else {
+			// Remove the spaces from our strings
+			char * cpy_first = lttrdup(first);
+			char * match = NULL;
+
+			// Iterate over cpy_second until the end is reached
+			while (*second != '\0') {
+
+				// second is the original string, with spaces. Skip over them.
+				if (*second != ' ') {
+					// find the character pointed by tmp_second in cpy_first
+					match = strchr(cpy_first, *second);
+
+					// if a match is found, overwrite it
+					if (match != NULL)
+						*match = '.';
+
+					// no match found, skip to cleanup
+					else
+						break;
+				}
+
+				// move on to the next character
+				second++;
+			}
+
+			// if tmp_second doesn't point to the end of the string, we found a
+			// character that doesn't exist in first, hence, no anagram
+			bool result = *second == '\0';
+
+			// cleanup
+			free(cpy_first);
+
+			return result;
+		}
+	}
+
+	return false;
+}
+
+bool is_plausible_anagram(char const * first, char const * second) {
+	unsigned int first_length = 0;
+	unsigned int second_length = 0;
+	unsigned int first_ord = 0;
+	unsigned int second_ord = 0;
+
+	do {
+		if (*first != ' ') {
+			first_ord += *first;
+			first_length++;
+		}
+	} while (*first++ != '\0');
+
+	do {
+		if (*second != ' ') {
+			second_ord += *second;
+			second_length++;
+		}
+	} while (*second++ != '\0');
+
+	return first_length == second_length && first_ord == second_ord;
+}
+
+void remove_from_pool(char * new_pool, char const * pool, char const * word) {
 	char * new_pool_iter = new_pool;
 	char * tmp_pool = strdup(pool);
 	char const * tmp_pool_iter = tmp_pool;
@@ -321,102 +460,73 @@ char * remove_from_pool(char const * pool, char const * word) {
 	}
 
 	*new_pool_iter = '\0';
-
 	free(tmp_pool);
-
-	return new_pool;
 }
 
-int solver_build_anagrams(solver_t * this,
-		char const * current_pool, char const * current_anagram)
+void solver_build_anagrams(solver_t * this, char const * current_pool)
 {
-	char const * word = NULL;
-	int anagrams_count = 0;
-	char * anagram = NULL;
-	char * new_pool = NULL;
-	int anagram_length = 0;
+	char * end = this->current_anagram + strlen(this->current_anagram);
+	unsigned int remaining = this->seed_length - count_letters(this->current_anagram);
+	char * new_pool = malloc(strlen(current_pool));
 
 	for (int i = 0; i < this->words_count; i++) {
-		word = this->words[i];
+		if (strlen(this->words[i]) <= remaining
+				&& exists_in_pool(current_pool, this->words[i])) {
 
-		if (exists_in_pool(current_pool, word)) {
-			anagram_length = strlen(current_anagram)
-				+ strlen(word) + 2;
+			sprintf(end, " %s", this->words[i]);
 
-			anagram = malloc(anagram_length);
-			sprintf(anagram, "%s %s", current_anagram,
-					word);
+			if (is_anagram(this->current_anagram, this->seed)) {
+				MD5((unsigned char *)this->current_anagram,
+						strlen(this->current_anagram), this->current_digest);
+				if (memcmp(this->current_digest, this->digest, MD5_DIGEST_SIZE) == 0) {
+					char md5string[33];
+					for(int j = 0; i < MD5_DIGEST_SIZE; j++)
+						sprintf(&md5string[j*2], "%02x",
+								(unsigned int)this->digest[j]);
+					VDEBUG("this->digest: %s", md5string);
+					for(int j = 0; i < MD5_DIGEST_SIZE; j++)
+						sprintf(&md5string[j*2], "%02x",
+								(unsigned int)this->current_digest[j]);
+					VDEBUG("this->current_digest: %s", md5string);
 
-			new_pool = remove_from_pool(current_pool,
-					word);
-
-			if (strlen(new_pool) == 0) {
-				list_append(this->anagrams, anagram);
-				anagrams_count++;
+					this->match = strdup(this->current_anagram);
+				}
+				this->anagrams_count++;
 			}
 
-			else if (strlen(new_pool) > MIN_WORD_LENGTH) {
-				anagrams_count += solver_build_anagrams(this,
-						new_pool, anagram);
-				free(anagram);
-				anagram = NULL;
+			else if (count_letters(this->current_anagram)
+					< (this->seed_length - MIN_WORD_LENGTH)) {
+				remove_from_pool(new_pool, current_pool, this->words[i]);
+				solver_build_anagrams(this, new_pool);
 			}
-
-			else {
-				free(anagram);
-				anagram = NULL;
-			}
-
-			free(new_pool);
-			new_pool = NULL;
-		}
-
-	}
-
-	return anagrams_count;
-}
-
-char const * solver_verify_hashes(solver_t * this) {
-	unsigned char digest[MD5_DIGEST_SIZE];
-	char * anagram = NULL;
-
-	for (int i = 0; i < this->anagrams->anagrams_count; i++) {
-		anagram = list_get(this->anagrams, i);
-
-		MD5((unsigned char *)anagram, strlen(anagram), digest);
-
-		if (memcmp(digest, this->digest, MD5_DIGEST_SIZE) == 0) {
-			VDEBUG("Found anagram match! `%s`", anagram);
-			return anagram;
 		}
 	}
 
-	return NULL;
+	*end = '\0';
+	free(new_pool);
 }
 
 void solver_loop(solver_t * this) {
-	char * pool = NULL;
-	char const * match = NULL;
 	struct timeval start, end;
+	char * pool = malloc(this->seed_length);
 
 	while (solver_has_current_word(this)) {
 		gettimeofday(&start, NULL);
 
 		if (exists_in_pool(this->seed, this->current_word)) {
-			pool = remove_from_pool(this->seed,
-					this->current_word);
-			solver_build_anagrams(this, pool, this->current_word);
-			free(pool);
+			remove_from_pool(pool, this->seed, this->current_word);
+			strcpy(this->current_anagram, this->current_word);
+			solver_build_anagrams(this, pool);
 		}
-
-		match = solver_verify_hashes(this);
 
 		gettimeofday(&end, NULL);
 
-		solver_submit_results(this, match,
+		solver_submit_results(this, this->match,
 				microseconds(end) - microseconds(start));
 
-		list_reset(this->anagrams);
+		this->anagrams_count = 0;
 		solver_next_word(this);
 	}
+
+	free(pool);
 }

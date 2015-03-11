@@ -20,12 +20,22 @@ typedef struct _solver_t solver_t;
 
 struct _solver_t {
 	char * seed;
+	int seed_length;
+
 	char * * words;
 	int words_count;
 	char * current_word;
+
 	client_t * client;
 
 	unsigned char * digest;
+	unsigned char * current_digest;
+
+	char * match;
+	int anagrams_count;
+	char * current_anagram;
+	char * tmp_first;
+	char * tmp_second;
 };
 
 // Constructor/destructor
@@ -42,10 +52,12 @@ int solver_has_current_word(solver_t * this);
 
 // Actual meat
 bool exists_in_pool(char const * pool, char const * word);
-char * remove_from_pool(char const * pool, char const * word);
-int solver_build_anagrams(solver_t * this,
-		char const * current_pool, char const * current_anagram);
-char const * solver_verify_hashes(solver_t * this);
+int count_letters(char const * ptr);
+char * lttrdup(char const * str);
+bool is_anagram(char const * first, char const * second);
+bool is_plausible_anagram(char const * first, char const * second);
+void remove_from_pool(char * new_pool, char const * pool, char const * word);
+void solver_build_anagrams(solver_t * this, char const * current_pool);
 void solver_loop(solver_t * this);
 
 #endif
