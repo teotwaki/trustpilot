@@ -16,7 +16,6 @@ solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 	this->words = NULL;
 	this->words_count = 0;
 	this->current_word = NULL;
-	this->anagrams = NULL;
 	this->digest = NULL;
 
 	this->client = client_init(zmq_ctx, endpoint);
@@ -39,14 +38,6 @@ solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 
 	if (rc != 0) {
 		ERROR("Couldn't initialise solver_t::current_word.");
-		solver_destroy(this);
-		return NULL;
-	}
-
-	this->anagrams = list_init();
-
-	if (this->anagrams == NULL) {
-		ERROR("Couldn't initialise solver_t::anagrams.");
 		solver_destroy(this);
 		return NULL;
 	}
@@ -82,11 +73,6 @@ int solver_destroy(solver_t * this) {
 	if (this->client != NULL) {
 		client_destroy(this->client);
 		this->client = NULL;
-	}
-
-	if (this->anagrams != NULL) {
-		list_destroy(this->anagrams);
-		this->anagrams = NULL;
 	}
 
 	if (this->digest != NULL) {

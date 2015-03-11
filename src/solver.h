@@ -7,7 +7,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "list.h"
 #include "log.h"
 #include "client.h"
 
@@ -25,7 +24,7 @@ struct _solver_t {
 	int words_count;
 	char * current_word;
 	client_t * client;
-	list_t * anagrams;
+
 	unsigned char * digest;
 };
 
