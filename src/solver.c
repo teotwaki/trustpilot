@@ -427,20 +427,11 @@ void solver_build_anagrams(solver_t * this, char const * current_pool)
 
 				if (solver_is_anagram(this)) {
 					MD5((unsigned char *)this->current_anagram,
-							strlen(this->current_anagram), this->current_digest);
-					if (memcmp(this->current_digest, this->digest, MD5_DIGEST_SIZE) == 0) {
-						char md5string[33];
-						for(int j = 0; i < MD5_DIGEST_SIZE; j++)
-							sprintf(&md5string[j*2], "%02x",
-									(unsigned int)this->digest[j]);
-						VDEBUG("this->digest: %s", md5string);
-						for(int j = 0; i < MD5_DIGEST_SIZE; j++)
-							sprintf(&md5string[j*2], "%02x",
-									(unsigned int)this->current_digest[j]);
-						VDEBUG("this->current_digest: %s", md5string);
-
+							strlen(this->current_anagram),
+							this->current_digest);
+					if (memcmp(this->current_digest, this->digest,
+								MD5_DIGEST_SIZE) == 0)
 						this->match = strdup(this->current_anagram);
-					}
 					this->anagrams_count++;
 				}
 
