@@ -533,6 +533,11 @@ void solver_loop(solver_t * this) {
 		solver_submit_results(this, this->match,
 				microseconds(end) - microseconds(start));
 
+		if (this->match != NULL) {
+			free(this->match);
+			this->match = NULL;
+		}
+
 		this->anagrams_count = 0;
 		solver_next_word(this);
 	}
