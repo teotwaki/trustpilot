@@ -50,6 +50,8 @@ void * run(void * zmq_ctx) {
 		pthread_exit(NULL);
 	}
 
+	DEBUG("Initialisation complete, starting loop.");
+
 	solver_loop(solver);
 
 	solver_destroy(solver);
