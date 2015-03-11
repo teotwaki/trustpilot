@@ -22,19 +22,19 @@ struct _solver_t {
 	char * seed;
 	int seed_length;
 	int seed_ord;
+	unsigned char * seed_digest;
 
 	char * * words;
 	int words_count;
-	char * current_word;
 
 	client_t * client;
 
-	unsigned char * digest;
+	char * current_anagram;
+	char * current_word;
 	unsigned char * current_digest;
+	int anagrams_count;
 
 	char * match;
-	int anagrams_count;
-	char * current_anagram;
 	char * tmp_first;
 	char * tmp_second;
 };

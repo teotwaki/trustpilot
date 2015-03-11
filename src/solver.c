@@ -16,7 +16,7 @@ solver_t * solver_init(void * zmq_ctx, char const * endpoint) {
 	this->words = NULL;
 	this->words_count = 0;
 	this->current_word = NULL;
-	this->digest = NULL;
+	this->seed_digest = NULL;
 	this->current_digest = malloc(sizeof(unsigned char) * MD5_DIGEST_SIZE);
 	this->match = NULL;
 	this->anagrams_count = 0;
@@ -81,9 +81,9 @@ int solver_destroy(solver_t * this) {
 		this->client = NULL;
 	}
 
-	if (this->digest != NULL) {
-		free(this->digest);
-		this->digest = NULL;
+	if (this->seed_digest != NULL) {
+		free(this->seed_digest);
+		this->seed_digest = NULL;
 	}
 
 	if (this->current_digest != NULL) {
@@ -177,14 +177,14 @@ int solver_initialise_words(solver_t * this) {
 		}
 
 		else if (strcmp(key, "hash") == 0) {
-			if (this->digest != NULL) {
+			if (this->seed_digest != NULL) {
 				WARN("solver_t's digest was not empty before calling "
 						"initialise_words. Releasing memory.");
-				free(this->digest);
+				free(this->seed_digest);
 			}
 
-			this->digest = malloc(sizeof(unsigned char) * MD5_DIGEST_SIZE);
-			unsigned char * digest_iter = this->digest;
+			this->seed_digest = malloc(sizeof(unsigned char) * MD5_DIGEST_SIZE);
+			unsigned char * digest_iter = this->seed_digest;
 			unsigned int tmp = 0;
 
 			for (char const * input_iter = json_object_get_string(val);
@@ -429,7 +429,7 @@ void solver_build_anagrams(solver_t * this, char const * current_pool)
 					MD5((unsigned char *)this->current_anagram,
 							strlen(this->current_anagram),
 							this->current_digest);
-					if (memcmp(this->current_digest, this->digest,
+					if (memcmp(this->current_digest, this->seed_digest,
 								MD5_DIGEST_SIZE) == 0)
 						this->match = strdup(this->current_anagram);
 					this->anagrams_count++;
