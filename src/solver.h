@@ -21,6 +21,7 @@ typedef struct _solver_t solver_t;
 struct _solver_t {
 	char * seed;
 	int seed_length;
+	int seed_ord;
 
 	char * * words;
 	int words_count;
@@ -42,6 +43,9 @@ struct _solver_t {
 solver_t * solver_init(void * zmq_ctx, char const * endpoint);
 int solver_destroy(solver_t * this);
 
+// Setters
+void solver_set_seed(solver_t * this, char const * seed);
+
 // Server communications
 int solver_initialise_words(solver_t * this);
 int solver_next_word(solver_t * this);
@@ -54,10 +58,10 @@ int solver_has_current_word(solver_t * this);
 bool exists_in_pool(char const * pool, char const * word);
 int count_letters(char const * ptr);
 char * lttrdup(char const * str);
-bool is_anagram(char const * first, char const * second);
-bool is_plausible_anagram(char const * first, char const * second);
 void remove_from_pool(char * new_pool, char const * pool, char const * word);
 void solver_build_anagrams(solver_t * this, char const * current_pool);
+bool solver_is_anagram(solver_t * this);
+bool solver_is_plausible_anagram(solver_t * this);
 void solver_loop(solver_t * this);
 
 #endif

@@ -116,6 +116,23 @@ int solver_destroy(solver_t * this) {
 	return 0;
 }
 
+void solver_set_seed(solver_t * this, char const * seed) {
+	if (this->seed != NULL) {
+		free(this->seed);
+	}
+
+	this->seed = strdup(seed);
+
+	this->seed_length = 0;
+	this->seed_ord = 0;
+
+	for (char * iter = this->seed; *iter != '\0'; iter++)
+		if (*iter != ' ') {
+			this->seed_length++;
+			this->seed_ord += *iter;
+		}
+}
+
 int solver_initialise_words(solver_t * this) {
 	DEBUG("Retrieving words from server.");
 
@@ -144,8 +161,8 @@ int solver_initialise_words(solver_t * this) {
 				this->seed_length = 0;
 			}
 
-			this->seed = strdup(json_object_get_string(val));
-			this->seed_length = count_letters(this->seed);
+			solver_set_seed(this, json_object_get_string(val));
+
 			int buffer_length = this->seed_length * 3;
 			this->current_anagram = malloc(buffer_length);
 
@@ -371,75 +388,6 @@ char * lttrdup(char const * str) {
 	return copy;
 }
 
-bool is_anagram(char const * first, char const * second) {
-	if (is_plausible_anagram(first, second)) {
-		// If the strings are equivalent, they are anagrams
-		if (strcmp(first, second) == 0)
-			return true;
-
-		else {
-			// Remove the spaces from our strings
-			char * cpy_first = lttrdup(first);
-			char * match = NULL;
-
-			// Iterate over cpy_second until the end is reached
-			while (*second != '\0') {
-
-				// second is the original string, with spaces. Skip over them.
-				if (*second != ' ') {
-					// find the character pointed by tmp_second in cpy_first
-					match = strchr(cpy_first, *second);
-
-					// if a match is found, overwrite it
-					if (match != NULL)
-						*match = '.';
-
-					// no match found, skip to cleanup
-					else
-						break;
-				}
-
-				// move on to the next character
-				second++;
-			}
-
-			// if tmp_second doesn't point to the end of the string, we found a
-			// character that doesn't exist in first, hence, no anagram
-			bool result = *second == '\0';
-
-			// cleanup
-			free(cpy_first);
-
-			return result;
-		}
-	}
-
-	return false;
-}
-
-bool is_plausible_anagram(char const * first, char const * second) {
-	unsigned int first_length = 0;
-	unsigned int second_length = 0;
-	unsigned int first_ord = 0;
-	unsigned int second_ord = 0;
-
-	do {
-		if (*first != ' ') {
-			first_ord += *first;
-			first_length++;
-		}
-	} while (*first++ != '\0');
-
-	do {
-		if (*second != ' ') {
-			second_ord += *second;
-			second_length++;
-		}
-	} while (*second++ != '\0');
-
-	return first_length == second_length && first_ord == second_ord;
-}
-
 void remove_from_pool(char * new_pool, char const * pool, char const * word) {
 	char * new_pool_iter = new_pool;
 	char * tmp_pool = strdup(pool);
@@ -475,7 +423,7 @@ void solver_build_anagrams(solver_t * this, char const * current_pool)
 
 			sprintf(end, " %s", this->words[i]);
 
-			if (is_anagram(this->current_anagram, this->seed)) {
+			if (solver_is_anagram(this)) {
 				MD5((unsigned char *)this->current_anagram,
 						strlen(this->current_anagram), this->current_digest);
 				if (memcmp(this->current_digest, this->digest, MD5_DIGEST_SIZE) == 0) {
@@ -504,6 +452,67 @@ void solver_build_anagrams(solver_t * this, char const * current_pool)
 
 	*end = '\0';
 	free(new_pool);
+}
+
+bool solver_is_anagram(solver_t * this) {
+	if (solver_is_plausible_anagram(this)) {
+		// If the strings are equivalent, they are anagrams
+		if (strcmp(this->current_anagram, this->seed) == 0)
+			return true;
+
+		else {
+			// Remove the spaces from our strings
+			char * copy = lttrdup(this->current_anagram);
+			char * match = NULL;
+			char const * seed_iter = this->seed;
+
+			// Iterate over cpy_second until the end is reached
+			while (*seed_iter != '\0') {
+
+				// second is the original string, with spaces. Skip over them.
+				if (*seed_iter != ' ') {
+					// find the character pointed by tmp_second in cpy_first
+					match = strchr(copy, *seed_iter);
+
+					// if a match is found, overwrite it
+					if (match != NULL)
+						*match = '.';
+
+					// no match found, skip to cleanup
+					else
+						break;
+				}
+
+				// move on to the next character
+				seed_iter++;
+			}
+
+			// if tmp_second doesn't point to the end of the string, we found a
+			// character that doesn't exist in first, hence, no anagram
+			bool result = *seed_iter == '\0';
+
+			// cleanup
+			free(copy);
+
+			return result;
+		}
+	}
+
+	return false;
+}
+
+bool solver_is_plausible_anagram(solver_t * this) {
+	int first_length = 0;
+	int first_ord = 0;
+
+	for (char const * first = this->current_anagram;
+			*first != '\0'; first++)
+		if (*first != ' ') {
+			first_ord += *first;
+			first_length++;
+		}
+
+	return first_length == this->seed_length && first_ord == this->seed_ord;
 }
 
 void solver_loop(solver_t * this) {
