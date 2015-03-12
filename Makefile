@@ -13,8 +13,7 @@ TESTS      := test_solver test_count_letters
 
 all: $(TARGET)
 
-OBJECTS      := $(SRC_DIR)/client.o $(SRC_DIR)/list.o $(SRC_DIR)/log.o \
-                $(SRC_DIR)/solver.o
+OBJECTS      := $(SRC_DIR)/client.o $(SRC_DIR)/log.o $(SRC_DIR)/solver.o
 MAIN_OBJECTS := $(SRC_DIR)/main.o
 TEST_OBJECTS := $(patsubst %,$(TEST_DIR)/%.o,$(TESTS))
 TESTS_RUN    := $(patsubst %,%-run,$(TESTS))
